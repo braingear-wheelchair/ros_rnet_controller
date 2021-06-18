@@ -8,6 +8,7 @@ int main (int argc, char** argv) {
 
 	ros::init(argc, argv, "rnet_controller");
 
+	std::string port;
 	rnet::RNetSerial rnet;
 	rosrnet::RNetController controller(&rnet);
 
@@ -31,7 +32,7 @@ int main (int argc, char** argv) {
 	ROS_INFO("[%s] Connection established.\n", rnet.name().c_str());
 
 	/*** Configuring the controller ***/
-	if(rnet.Configure() == false) {
+	if(controller.Configure() == false) {
 		ROS_ERROR("[%s] Cannot configure the controller.\n", rnet.name().c_str());
 	}
 	ROS_INFO("[%s] Controller configured.\n", rnet.name().c_str());
