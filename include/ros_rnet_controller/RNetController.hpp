@@ -28,13 +28,23 @@ class RNetController {
 
 	private:
 		void teardown(void); 
+		float normalize(float value, float max, float min);
+		int filter(int value);
 	
 	private:
 		ros::NodeHandle			nh_;
 		ros::NodeHandle			p_nh_;
 		ros::Subscriber			sub_;
 		unsigned int			rate_;
-			
+		std::string 			topic_;
+		
+		float maximum_forward_velocity_;
+		float maximum_backward_velocity_;
+		float maximum_turning_velocity_;
+
+		static constexpr int max_allowed_ = 100;
+		static constexpr int min_allowed_ = -100;
+
 		int8_t vx_;
 		int8_t vy_;
 		

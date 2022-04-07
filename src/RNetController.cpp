@@ -15,25 +15,33 @@ RNetController::RNetController(rnet::RNetSerial* serial) : p_nh_("~") {
 	this->srv_rx_ = new rnet::RNetServiceRx(this->tx_, this->rx_);
 	this->srv_xy_ = new rnet::RNetServiceXY(this->tx_, this->rx_);
 
+	this->topic_ = "/cmd_vel";
+
 }
 
 RNetController::~RNetController(void) {
 	
-	this->teardown();
-
-	delete this->rx_;
-	delete this->tx_;
 	delete this->reader_;
 	delete this->writer_;
 	delete this->srv_rx_;
 	delete this->srv_xy_;
+	delete this->rx_;
+	delete this->tx_;
 }
 
 bool RNetController::Configure(void) {
 
 	int rate;
 	ros::param::param<int>("~rate", rate, 100);
+	ros::param::param<float>("~maximum_forward_velocity", this->maximum_forward_velocity_, 0.27f);
+	ros::param::param<float>("~maximum_backward_velocity", this->maximum_backward_velocity_, 0.27f);
+	ros::param::param<float>("~maximum_turning_velocity", this->maximum_turning_velocity_, 0.27f);
+
 	this->rate_ = (unsigned int)rate;
+
+
+	// Subscribers
+	this->sub_ = this->nh_.subscribe(this->topic_, 1, &RNetController::on_received_data, this); 
 
 
 	return true;
@@ -41,15 +49,17 @@ bool RNetController::Configure(void) {
 
 void RNetController::teardown(void) {
 	
+	
 	if (this->reader_->IsRunning()) {
 		this->reader_->Stop();
 		this->reader_->Join();
 	}
-	
+
 	if (this->writer_->IsRunning()) {
 		this->writer_->Stop();
 		this->writer_->Join();
 	}
+	
 	
 	if (this->srv_rx_->IsRunning()) {
 		this->srv_rx_->Stop();
@@ -60,6 +70,7 @@ void RNetController::teardown(void) {
 		this->srv_xy_->Stop();
 		this->srv_xy_->Join();
 	}
+	
 
 }
 
@@ -90,17 +101,45 @@ void RNetController::Run(void) {
 		r.sleep();
 	}
 
-	this->teardown();
-
 }
 
 void RNetController::on_received_data(const geometry_msgs::Twist& msg) {
 
 
-	// !!! Missing normalization !!! //
+	this->vy_ = this->normalize(msg.linear.x, this->maximum_forward_velocity_, -this->maximum_backward_velocity_);
+	this->vx_ = -this->normalize(msg.angular.z, this->maximum_turning_velocity_, -this->maximum_turning_velocity_);
+
+	this->vx_ = this->filter(this->vx_);
+	this->vy_ = this->filter(this->vy_);
 	
-	this->vx_ = msg.linear.x;
-	this->vy_ = msg.angular.z;
+	ROS_INFO("Message received msg.linear.x=%f | vy_ = %d", msg.linear.x, this->vy_);	
+	ROS_INFO("Message received msg.angular.z=%f | vx_ = %d", msg.angular.z, this->vx_);	
+}
+
+int RNetController::filter(int value) {
+
+	int retvalue = value;
+
+	if(retvalue > this->max_allowed_) {
+		retvalue = this->max_allowed_;
+	} else if(retvalue < this->min_allowed_) {
+		retvalue = this->min_allowed_;
+	}
+
+	return retvalue;
+}
+
+float RNetController::normalize(float value, float max, float min) {
+
+	float max_allowed, min_allowed;
+	
+	int sign = (value > 0) ? 1 : ((value < 0) ? -1 : 0);	
+	
+	max_allowed = (float)this->max_allowed_;
+	min_allowed = (float)this->min_allowed_;
+
+
+	return ( ( ( (max_allowed - min_allowed) * (value - min) ) / (max - min) ) + min_allowed);
 }
 
 }
