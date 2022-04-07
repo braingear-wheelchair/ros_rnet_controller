@@ -40,6 +40,7 @@ include_directories(${catkin_INCLUDE_DIRS}
 
 add_library(${PROJECT_NAME}	
 			src/RNetController.cpp
+			src/JoyRNetController.cpp
 			)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES}
@@ -54,3 +55,6 @@ add_dependencies(${PROJECT_NAME}
 #################
 add_executable(rnet_controller src/rnet_controller.cpp)
 target_link_libraries(rnet_controller ${PROJECT_NAME})
+
+add_executable(joy_rnet_controller src/joy_rnet_controller.cpp)
+target_link_libraries(joy_rnet_controller ${PROJECT_NAME})
