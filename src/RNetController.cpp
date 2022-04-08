@@ -32,11 +32,20 @@ RNetController::~RNetController(void) {
 bool RNetController::Configure(void) {
 
 	int rate;
+	int profile;
 	ros::param::param<int>("~rate", rate, 100);
-	ros::param::param<float>("~maximum_forward_velocity", this->maximum_forward_velocity_, 0.27f);
-	ros::param::param<float>("~maximum_backward_velocity", this->maximum_backward_velocity_, 0.27f);
-	ros::param::param<float>("~maximum_turning_velocity", this->maximum_turning_velocity_, 0.27f);
+	ros::param::param<int>("~profile", profile, 1);
+	
+	this->set_velocity_profile(profile);
 
+	ros::param::param<float>("~maximum_forward_velocity",  this->max_forward_velocity_, 
+														   this->max_forward_velocity_);
+	ros::param::param<float>("~maximum_backward_velocity", this->max_backward_velocity_, 
+														   this->max_backward_velocity_);
+	ros::param::param<float>("~maximum_turning_velocity",  this->max_turning_velocity_, 
+														   this->max_turning_velocity_);
+
+	this->DumpProfile();
 	this->rate_ = (unsigned int)rate;
 
 
@@ -46,6 +55,29 @@ bool RNetController::Configure(void) {
 
 	return true;
 }
+
+void RNetController::set_velocity_profile(int profile) {
+
+	int offset;
+	profile--;
+	this->profile_ = (RNetProfile)profile;
+
+	offset = profile*3;
+
+	this->max_forward_velocity_  = this->velocities_.at(offset);
+	this->max_backward_velocity_ = this->velocities_.at(offset+1);
+	this->max_turning_velocity_  = this->velocities_.at(offset+2);
+}
+
+void RNetController::DumpProfile(void) {
+
+	int profile = (int)(this->profile_) + 1;
+	float maxforward  = this->max_forward_velocity_;
+	float maxbackward = this->max_backward_velocity_;
+	float maxturning  = this->max_turning_velocity_;
+	ROS_INFO("Profile %d: [%f, %f, %f]", profile, maxforward, maxbackward, maxturning);
+}
+
 
 void RNetController::teardown(void) {
 	
@@ -105,12 +137,29 @@ void RNetController::Run(void) {
 
 void RNetController::on_received_data(const geometry_msgs::Twist& msg) {
 
+	float vx, vy;
 
-	this->vy_ = this->normalize(msg.linear.x, this->maximum_forward_velocity_, -this->maximum_backward_velocity_);
-	this->vx_ = -this->normalize(msg.angular.z, this->maximum_turning_velocity_, -this->maximum_turning_velocity_);
+	if(std::fabs(msg.angular.z) > this->max_turning_velocity_) {
+		ROS_WARN("Angular velocity over range: it will be filtered (angular = %f, max_angular = %f)", 
+				 msg.angular.z, this->max_turning_velocity_);
+	}
 
-	this->vx_ = this->filter(this->vx_);
-	this->vy_ = this->filter(this->vy_);
+	if(msg.linear.x > this->max_forward_velocity_) {
+		ROS_WARN("Forward velocity over range: it will be filtered (forward = %f, max_forward = %f)", 
+				 msg.linear.x, this->max_forward_velocity_);
+	}
+	
+	if(msg.linear.x < -this->max_backward_velocity_) {
+		ROS_WARN("Backward velocity over range: it will be filtered (backward = %f, max_backward = %f)", 
+				 msg.linear.x, -this->max_backward_velocity_);
+	}
+	
+	vy = this->normalize(msg.linear.x, this->max_forward_velocity_, -this->max_backward_velocity_);
+	vx = -this->normalize(msg.angular.z, this->max_turning_velocity_, -this->max_turning_velocity_);
+
+	this->vx_ = this->filter(vx);
+	this->vy_ = this->filter(vy);
+
 	
 	ROS_INFO("Message received msg.linear.x=%f | vy_ = %d", msg.linear.x, this->vy_);	
 	ROS_INFO("Message received msg.angular.z=%f | vx_ = %d", msg.angular.z, this->vx_);	

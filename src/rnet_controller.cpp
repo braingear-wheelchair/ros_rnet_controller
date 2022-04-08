@@ -25,8 +25,10 @@ int main (int argc, char** argv) {
 
 	/*** Connecting to the chipset ***/
 	ROS_INFO("[%s] Establishing connection to Rebus Chipset...\n", rnet.name().c_str());	
-	if(rnet.Connect() == false) {
+	if(rnet.Connect(5000) == false) {
 		ROS_ERROR("[%s] Cannot establish connection with Rebus Chipset.\n", rnet.name().c_str());
+		rnet.Close();
+		ros::shutdown();
 		return EXIT_FAILURE;
 	}
 	ROS_INFO("[%s] Connection established.\n", rnet.name().c_str());
