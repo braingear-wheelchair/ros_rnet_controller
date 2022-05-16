@@ -15,13 +15,17 @@ class JoyRNetController {
 
 	private:
 		void on_received_joy(const sensor_msgs::Joy::ConstPtr& joy);
+		float normalize(float value, float max, float min);
 
 	private:
 		ros::NodeHandle nh_;
 		int linear_, angular_;
-     	double l_scale_, a_scale_;
      	ros::Publisher vel_pub_;
      	ros::Subscriber joy_sub_;
+
+		float max_forward_velocity_;
+		float max_backward_velocity_;
+		float max_turning_velocity_;
 
 };
 

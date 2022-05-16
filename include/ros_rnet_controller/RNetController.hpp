@@ -51,10 +51,10 @@ class RNetController {
 		static constexpr int min_allowed_ = -100;
 
 		const std::vector<float> velocities_ = { 0.27f, 0.27f, 0.27f, 
-                                           		 2.00f, 2.01f, 2.02f, 
-                                           		 3.00f, 3.01f, 3.02f, 
-                                           		 4.00f, 4.01f, 4.02f,
-												 5.00f, 5.01f, 5.02f };
+                                           		 0.27f, 0.27f, 0.27f, 
+                                           		 0.27f, 0.27f, 0.27f, 
+                                           		 0.27f, 0.27f, 0.27f,
+												 0.27f, 0.27f, 0.27f };
 
 		RNetProfile profile_ = RNetProfile::One;
 
