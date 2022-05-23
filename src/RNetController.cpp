@@ -183,12 +183,27 @@ float RNetController::normalize(float value, float max, float min) {
 	float max_allowed, min_allowed;
 	
 	int sign = (value > 0) ? 1 : ((value < 0) ? -1 : 0);	
-	
+	/*
 	max_allowed = (float)this->max_allowed_;
 	min_allowed = (float)this->min_allowed_;
 
 
 	return ( ( ( (max_allowed - min_allowed) * (value - min) ) / (max - min) ) + min_allowed);
+	*/
+	if (sign > 0){
+		max_allowed = (float)this->max_allowed_;
+		min_allowed = 0;
+	
+
+		return ( ( ( (max_allowed - min_allowed) * (value) ) / (max) ) + min_allowed);
+	
+	} else if(sign < 0){
+		max_allowed = (float)this->min_allowed_;
+		min_allowed = 0;
+
+
+		return ( ( ( (max_allowed - min_allowed) * (value) ) / (min) ) + min_allowed);
+	}
 }
 
 }
