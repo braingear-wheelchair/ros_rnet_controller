@@ -139,9 +139,9 @@ void RNetController::on_received_data(const geometry_msgs::Twist& msg) {
 
 	float vx, vy;
 
-	if(std::fabs(msg.angular.z) > this->max_turning_velocity_) {
+	if(std::fabs(msg.angular.z*this->radius_) > this->max_turning_velocity_) {
 		ROS_WARN("Angular velocity over range: it will be filtered (angular = %f, max_angular = %f)", 
-				 msg.angular.z, this->max_turning_velocity_);
+				 msg.angular.z*this->radius_, this->max_turning_velocity_);
 	}
 
 	if(msg.linear.x > this->max_forward_velocity_) {
@@ -155,14 +155,14 @@ void RNetController::on_received_data(const geometry_msgs::Twist& msg) {
 	}
 	
 	vy = this->normalize(msg.linear.x, this->max_forward_velocity_, -this->max_backward_velocity_);
-	vx = -this->normalize(msg.angular.z, this->max_turning_velocity_, -this->max_turning_velocity_);
+	vx = -this->normalize(msg.angular.z*this->radius_, this->max_turning_velocity_, -this->max_turning_velocity_);
 
 	this->vx_ = this->filter(vx);
 	this->vy_ = this->filter(vy);
 
 	
 	ROS_INFO("Message received msg.linear.x=%f | vy_ = %d", msg.linear.x, this->vy_);	
-	ROS_INFO("Message received msg.angular.z=%f | vx_ = %d", msg.angular.z, this->vx_);	
+	ROS_INFO("Message received msg.angular.z=%f | vx_ = %d", msg.angular.z*this->radius_, this->vx_);	
 }
 
 int RNetController::filter(int value) {
