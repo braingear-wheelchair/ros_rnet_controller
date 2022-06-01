@@ -52,7 +52,7 @@ class RNetController {
 		
 		const float radius_ = 0.3506;
 
-		const std::vector<float> velocities_ = { 0.55f, 0.27f, 0.27f, 
+		const std::vector<float> velocities_ = { 0.55f, 0.27f, 0.77f, 
                                            		  0.55f, 0.27f, 0.27f, 
                                            		  0.55f, 0.27f, 0.27f, 
                                            		  0.55f, 0.27f, 0.27f,
@@ -60,8 +60,8 @@ class RNetController {
 
 		RNetProfile profile_ = RNetProfile::One;
 
-		int8_t vx_;
-		int8_t vy_;
+		int8_t vx_ = 0;
+		int8_t vy_ = 0;
 		
 		rnet::RNetSerial*		serial_;
 		rnet::RNetBuffer*		rx_;

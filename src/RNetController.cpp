@@ -181,6 +181,7 @@ int RNetController::filter(int value) {
 float RNetController::normalize(float value, float max, float min) {
 
 	float max_allowed, min_allowed;
+	float normvalue = 0.0f;
 	
 	int sign = (value > 0) ? 1 : ((value < 0) ? -1 : 0);	
 	/*
@@ -195,15 +196,18 @@ float RNetController::normalize(float value, float max, float min) {
 		min_allowed = 0;
 	
 
-		return ( ( ( (max_allowed - min_allowed) * (value) ) / (max) ) + min_allowed);
+		normvalue = ( ( ( (max_allowed - min_allowed) * (value) ) / (max) ) + min_allowed);
 	
 	} else if(sign < 0){
 		max_allowed = (float)this->min_allowed_;
 		min_allowed = 0;
 
 
-		return ( ( ( (max_allowed - min_allowed) * (value) ) / (min) ) + min_allowed);
+		normvalue = ( ( ( (max_allowed - min_allowed) * (value) ) / (min) ) + min_allowed);
 	}
+
+	return normvalue;
+
 }
 
 }
