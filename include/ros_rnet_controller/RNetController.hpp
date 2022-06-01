@@ -52,7 +52,7 @@ class RNetController {
 		
 		const float radius_ = 0.3506;
 
-		const std::vector<float> velocities_ = { 0.55f, 0.27f, 0.77f, 
+		const std::vector<float> velocities_ = { 0.55f, 0.27f, 0.27f, 
                                            		  0.55f, 0.27f, 0.27f, 
                                            		  0.55f, 0.27f, 0.27f, 
                                            		  0.55f, 0.27f, 0.27f,
